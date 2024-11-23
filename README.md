@@ -59,15 +59,3 @@ The **Smart Home Control System** is a prototype mobile-based application integr
 
 5. **Set Alarms**  
    - Configure temperature thresholds via the application to trigger alarms if exceeded.  
-
-## Team Contributions  
-Refer to the technical report for a breakdown of team contributions and roles.  
-
-## Demo  
-Watch the [demo video](#) to see the prototype in action.  
-
-## Problems and Solutions  
-Encountered challenges and their resolutions are detailed in the technical report.  
-
-## License  
-This project is licensed under the [MIT License](LICENSE).  
