@@ -56,7 +56,7 @@ void Relay_Init(char port, uint8_t pin);
 void SysClockConfig(void);
 
 /**
- * @brief Configures GPIO Port F for the buzzer (PF1).
+ * @brief Configures GPIO Port E for the buzzer (PF1).
  */
 void GPIOFConfig(void);
 
