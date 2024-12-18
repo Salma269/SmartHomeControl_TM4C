@@ -8,6 +8,9 @@
 
 // SysTick interrupt handler is declared in Temp.c
 
+// Function Prototypes
+void Peripheral_Init(void);
+
 
 // Callback function for SysTick interrupt
 void SysTick_Callback(void) {
@@ -25,8 +28,11 @@ void SysTick_Callback(void) {
     }
 }
 
-int main(void) {
-    // Enable the clock for Port E (for buzzer is connected)
+/**
+ * Initializes and enables peripherals such as GPIO, ADC, and SysTick.
+ */
+void Peripheral_Init(void) {
+        // Enable the clock for Port E (for buzzer is connected)
     SYSCTL_RCGCGPIO_R |= 0x10;        // Enable clock for Port E (bit 4)
     GPIO_PORTE_DIR_R |= 0x02;         // Set PE1 as output for Buzzer
     GPIO_PORTE_DEN_R |= 0x02;         // Enable digital function for PE1
@@ -45,6 +51,12 @@ int main(void) {
     // Enable SysTick interrupt and SysTick timer
     NVIC_ST_CTRL_R |= 0x07;   // Enable SysTick with system clock and interrupt
     //__enable_irq();           // Enable global interrupts
+}
+
+int main(void) {
+    
+    // Initialize peripherals
+    Peripheral_Init();
 
     // Main loop - SysTick interrupt will handle temperature checking and buzzer
     while (1) {
