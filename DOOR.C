@@ -1,6 +1,6 @@
 // door_status.c
 #include "DOOR.h"
-#include "GPIO.h" // Assuming GPIO functions are used for door status detection
+#include "DIO.h" // Assuming GPIO functions are used for door status detection
 
 // Define door GPIO pin mapping (example)
 
