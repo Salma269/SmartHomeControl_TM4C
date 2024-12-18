@@ -3,9 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "tm4c123gh6pm.h"
 
-// Function prototypes for polling mode
+/**
+ * @brief Callback function for the SysTick interrupt to handle periodic tasks.
+ */
+//void SysTick_Callback(void);
+
+// Function prototypes
 void SysTick_Init(uint32_t reloadValue);
 void SysTick_Enable(void);
 void SysTick_Disable(void);
@@ -16,5 +20,4 @@ bool SysTick_Is_Time_Out(void);
 
 // Function prototypes for interrupt mode
 void SysTick_InitInterrupt(uint32_t reloadValue, void (*callback)(void));
-
 #endif // SYSTICK_H
