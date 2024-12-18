@@ -15,7 +15,7 @@ void PortF_Init(void) {
     GPIO_PORTF_DATA_R |= (1U << 1) | (1U << 2); // Initially set PF1 and PF2 HIGH (Lamp and Plug OFF)
 }
 
-void InitializePortF_Lamp_Plug_timer_Button(void) {
+void InitializePortF_Lamp_Plug_Button(void) {
     PortF_Init();  // Initialize Port F for Lamp and Plug control
     configure_PD0_as_input_PortD(); 
     

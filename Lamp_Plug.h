@@ -8,7 +8,7 @@
 #include "InputButton.h"
 
 void PortF_Init(void); //portF initialization
-void InitializePortF_Lamp_Plug_timer(void); //the start
+void InitializePortF_Lamp_Plug_Button(void); //the start
 void PlugOn(void);   // Connect to PF2 on relay, remember it is Active Low, but accounted for in the Function
 void PlugOff(void);
 void LampOn(void);   // Connect to PF1 on relay, same

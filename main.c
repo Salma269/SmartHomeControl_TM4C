@@ -5,8 +5,8 @@
 #include "DIO.h"
 #include "Systick.h"
 #include "Relay.h"
-
-// SysTick interrupt handler is declared in Temp.c
+#include "InputButton.h"  
+#include "Lamp_Plug.h"    
 
 // Function Prototypes
 void Peripheral_Init(void);
@@ -17,10 +17,6 @@ void SysTick_Callback(void) {
     // Toggle the relay on Port E, Pin 1
     ReadTemperature();  // Read temperature from LM35
     float temperature = ADCToCelsius(adcValue);
-    
-    // Print Temp
-    sprintf(temperature, "Temp: %.2f C\n", temperature); // Format temperature as a string
-
     if (temperature > TEMP_THRESHOLD && !alarmTriggered) {
         TriggerAlarm();  // Trigger buzzer if temperature exceeds threshold
     } else if (temperature <= TEMP_THRESHOLD && alarmTriggered) {
@@ -64,12 +60,10 @@ int main(void) {
     
     // Initialize peripherals
     Peripheral_Init();
-    InitializePortF_Lamp_Plug_timer_Button(void);   //initialize PortF
-    configure_PD0_PD1_as_input_portD(void);         //Initialize portD
+    InitializePortF_Lamp_Plug_Button();  // Initialize Port F
+    configure_PD0_PD1_as_input_with_interrupt(); // Configure PD0 and PD1 with interrupts;         //Initialize portD
 
     // Main loop - SysTick interrupt will handle temperature checking and buzzer
     while (1) {
-        TriggerButtonForPlug();
-        TriggerButtonForLamp();
     }
 }
