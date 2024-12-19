@@ -14,4 +14,10 @@ void PlugOff(void);
 void LampOn(void);   // Connect to PF1 on relay, same
 void LampOff(void);
 
+
+//for testing purposes only
+void EnableGreenLED(void);
+void TurnGreenLEDOn(void);
+void TurnGreenLEDOff(void);
+
 #endif // LAMP_PLUG_H
