@@ -60,9 +60,9 @@ int main(void) {
     
     // Initialize peripherals
     Peripheral_Init();
-    PortF_Init();  // Initialize Port F
-    configure_PD0_PD1_PD2_as_input_with_interrupt(); // Configure PD0 and PD1 with interrupts;         //Initialize portD
-    ConfigureTimerForClock();
+    InitializePortF_Lamp_Plug_Button();  // Initialize Port F
+    configure_PD0_PD1_as_input_with_interrupt(); // Configure PD0 and PD1 with interrupts;         //Initialize portD
+
     // Main loop - SysTick interrupt will handle temperature checking and buzzer
     while (1) {
     }
