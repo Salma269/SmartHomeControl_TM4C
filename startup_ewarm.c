@@ -119,7 +119,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // ADC Sequence 2
     IntDefaultHandler,                      // ADC Sequence 3
     IntDefaultHandler,                      // Watchdog timer
-    Timer0A_Handler,                      // Timer 0 subtimer A
+    Timer0A_Handler,                        // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
     IntDefaultHandler,                      // Timer 1 subtimer B
@@ -127,7 +127,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // Timer 2 subtimer B
     IntDefaultHandler,                      // Analog Comparator 0
     IntDefaultHandler,                      // Analog Comparator 1
-    IntDefaultHandler,             Timer0A_Handler         // Analog Comparator 2
+    IntDefaultHandler,                      // Analog Comparator 2
     IntDefaultHandler,                      // System Control (PLL, OSC, BO)
     IntDefaultHandler,                      // FLASH Control
     IntDefaultHandler,                      // GPIO Port F
