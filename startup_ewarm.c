@@ -27,7 +27,6 @@
 #include "hw_nvic.h"
 #include "hw_types.h"
 #include "InputButton.h"
-#include "GPTMTimer.h"
 //*****************************************************************************
 //
 // Enable the IAR extensions for this source file.
