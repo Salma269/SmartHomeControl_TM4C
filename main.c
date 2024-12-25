@@ -51,9 +51,9 @@ void Peripheral_Init(void) {
 
 //pins used
 //PF1 for Lamp
-//PF2 for plug
-//PD0 for Plug Button
+//PF2 for plug//PD0 for Plug Button
 //PD1 for Lamp Button
+
 
 
 int main(void) {
@@ -62,7 +62,7 @@ int main(void) {
     Peripheral_Init();
     PortF_Init();  // Initialize Port F
     configure_PD0_PD1_PD2_as_input_with_interrupt(); // Configure PD0 and PD1 with interrupts;         //Initialize portD
-    ConfigureTimerForClock();
+
     // Main loop - SysTick interrupt will handle temperature checking and buzzer
     while (1) {
     }
