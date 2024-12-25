@@ -2,9 +2,7 @@
 #include <stdbool.h>
 #include "tm4c123gh6pm.h"
 #include "Temp.h"
-#include "DIO.h"
 #include "Systick.h"
-#include "Relay.h"
 #include "InputButton.h"  
 #include "Lamp_Plug.h"    
 
