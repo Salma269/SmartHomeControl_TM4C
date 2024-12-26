@@ -32,13 +32,14 @@ void GPIOPortD_Handler(void) {
     // Handle interrupt for PD2 (Door functionality)
     if (GPIO_PORTD_RIS_R & (1u << 2)) {      // Check if interrupt is from PD2
         GPIO_PORTD_ICR_R = (1u << 2);        // Clear the interrupt flag
-        int status = Get_Door_Status();
-        if (status) {
+        doorStatus = Get_Door_Status();
+        if (doorStatus) {
             // Button pressed (signal HIGH)
             SendDataToGUI("DOOR:CLOSED\n");
         } else {
             // Button released (signal LOW)
             SendDataToGUI("DOOR:OPEN\n");
-        }
-    }
+        }
+    }
+    
 }
