@@ -15,9 +15,12 @@
 #include "Lamp_Plug.h" 
 #include "Temp.h"
 #include "Systick.h"
+#include "Peripheral.h"  
 
 #define UART0_BASE      0x4000C000
 #define UART_BASE UART0_BASE
+
+volatile int doorStatus = 0; // Initially, the door is open (or any other initial state)
 
 // Define UART0 Base and GPIO PortA
 #define GPIO_PORTA_BASE 0x40004000
@@ -85,11 +88,14 @@ void ProcessCommand(const char *command) {
         UART_SendString("PLUG TURNED OFF\n");
     }
 }
+void SendDataToGUI(const char *status) {
+    if (strlen(status) >= 32) {
+        UART_SendString("ERROR: Status message too long\n");
+        return;
+    }
 
-// Function to simulate sending data to the GUI
-void SendDataToGUI(char status[32]) {
     char buffer[32];
-    
+
     // Send door status
     UART_SendString(status);
 
@@ -121,11 +127,10 @@ void UART0_Handler(void) {
 
 
 // Callback function for SysTick interrupt
-void SysTick_Callback(void) {
+void SysTick_Callback_Func(void) {
     // Toggle the relay on Port E, Pin 1
     ReadTemperature();  // Read temperature from LM35
-    float temperature = ADCToCelsius(adcValue);
-
+    float temperature = ADCToCelsius(adcValue);  // First call
     if (temperature > TEMP_THRESHOLD && !alarmTriggered) {
         TriggerAlarm();  // Trigger buzzer if temperature exceeds threshold
     } else if (temperature <= TEMP_THRESHOLD && alarmTriggered) {
@@ -133,69 +138,20 @@ void SysTick_Callback(void) {
     }
 }
 
-void Peripheral_Init(void) {
-  
-    // Enable the clock for Port E (for buzzer is connected)
-    SYSCTL_RCGCGPIO_R |= 0x10;        // Enable clock for Port E (bit 4)
-    GPIO_PORTE_DIR_R |= 0x02;         // Set PE1 as output for Buzzer
-    GPIO_PORTE_DEN_R |= 0x02;         // Enable digital function for PE1
-    
-    // Enable clock for ADC0 (for sensor)
-    SYSCTL_RCGCADC_R |= 0x01;  // Enable clock for ADC0
-    while ((SYSCTL_PRADC_R & 0x01) == 0);  // Wait for ADC0 to be ready
+void TestBuzzer(void) {
+    // Set PE1 to output
+    GPIO_PORTE_DIR_R |= 0x02;  // Set PE1 as output
+    GPIO_PORTE_DEN_R |= 0x02;  // Enable digital function for PE1
 
-    // Disable sequencer 3 (before configuring it)
-    ADC0_ACTSS_R &= ~0x08;  // Disable sequencer 3
+    // Test for active-low
+    GPIO_PORTE_DATA_R &= ~0x02;  // Set PE1 low to activate (if active-low)
+    SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
+    GPIO_PORTE_DATA_R |= 0x02;   // Set PE1 high to deactivate (if active-low)
 
-    // Configure sequencer 3 to read from channel 1 (AIN1, which is LM35)
-    ADC0_SSMUX3_R = 0x01;   // Select channel 1 (AIN1 for LM35)
-    ADC0_SSCTL3_R = 0x06;   // Configure sequencer 3 for one sample, interrupt on completion (END0)
-
-    // Enable sequencer 3 (start taking samples)
-    ADC0_ACTSS_R |= 0x08;  // Enable sequencer 3 
-    // Enable clock for Port F
-    SYSCTL_RCGCGPIO_R |= 0x20;          // Enable clock for Port F
-    while ((SYSCTL_PRGPIO_R & 0x20) == 0);  // Wait for Port F to be ready
-    
-    // Initialize Port F
-    GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;     // Unlock GPIO Port F
-    GPIO_PORTF_CR_R |= (1U << 1) | (1U << 2);  // Allow changes to PF1 and PF2
-    GPIO_PORTF_DIR_R |= (1U << 1) | (1U << 2); // Set PF1 and PF2 as outputs
-    GPIO_PORTF_DEN_R |= (1U << 1) | (1U << 2); // Enable digital I/O on PF1 and PF2
-    GPIO_PORTF_DATA_R |= (1U << 1) | (1U << 2); // Initially set PF1 and PF2 HIGH (Lamp and Plug OFF)
-    
-    // Configure PD0, PD1, PD2 as inputs with interrupt
-    SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R3;  // Enable clock for Port D
-    while ((SYSCTL_PRGPIO_R & SYSCTL_PRGPIO_R3) == 0);  // Wait for clock stabilization
-
-    GPIO_PORTD_LOCK_R = GPIO_LOCK_KEY;                        // Unlock Port D
-    GPIO_PORTD_CR_R |= (1u << 0) | (1u << 1) | (1u << 2);     // Allow changes to PD0, PD1, and PD2
-    GPIO_PORTD_DIR_R &= ~((1u << 0) | (1u << 1) | (1u << 2)); // Set PD0, PD1, and PD2 as inputs
-    GPIO_PORTD_DEN_R |= (1u << 0) | (1u << 1) | (1u << 2);    // Enable digital functionality
-    GPIO_PORTD_PUR_R |= (1u << 0) | (1u << 1) | (1u << 2);    // Enable pull-up resistors
-
-    GPIO_PORTD_IS_R &= ~((1u << 0) | (1u << 1) | (1u << 2));  // Set to edge-sensitive
-    GPIO_PORTD_IBE_R |= (1u << 0) | (1u << 1) | (1u << 2);    // Interrupt on both edges
-    GPIO_PORTD_ICR_R = (1u << 0) | (1u << 1) | (1u << 2);     // Clear any prior interrupts
-    GPIO_PORTD_IM_R |= (1u << 0) | (1u << 1) | (1u << 2);     // Unmask interrupts for PD0, PD1, and PD2
-
-    NVIC_EN0_R |= (1 << (INT_GPIOD - 16));                    // Enable interrupt in NVIC for Port D
-    
-    // Initialize SysTick with 1-second delay ( 16 MHz clock)
-    SysTick_InitInterrupt(15999999, SysTick_Callback);  // 1-second delay with a 16 MHz clock
-
-    // Enable SysTick interrupt and SysTick timer
-    NVIC_ST_CTRL_R |= 0x07;   // Enable SysTick with system clock and interrupt
-
-    // Port C Initialization
-    SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R2;  // Enable clock for Port C
-    while ((SYSCTL_PRGPIO_R & SYSCTL_PRGPIO_R2) == 0);  // Wait for Port C to be ready
-
-    GPIO_PORTC_LOCK_R = GPIO_LOCK_KEY;              // Unlock Port C
-    GPIO_PORTC_CR_R |= (1U << 4) | (1U << 5);       // Allow changes to PC4 and PC5
-    GPIO_PORTC_DIR_R |= (1U << 4) | (1U << 5);      // Set PC4 and PC5 as outputs
-    GPIO_PORTC_DEN_R |= (1U << 4) | (1U << 5);      // Enable digital I/O on PC4 and PC5
-    GPIO_PORTC_DATA_R |= (1U << 4) | (1U << 5);     // Initially set PC4 and PC5 HIGH (Relays OFF)
+    // Test for active-high
+    GPIO_PORTE_DATA_R |= 0x02;   // Set PE1 high to activate (if active-high)
+    SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
+    GPIO_PORTE_DATA_R &= ~0x02;  // Set PE1 low to deactivate (if active-high)
 }
 
 
@@ -209,7 +165,7 @@ int main(void) {
     UART_Init();
     
     Peripheral_Init();
-    ReadTemperature();
+    TestBuzzer();
 
     // Main loop
     while (1) {
@@ -226,9 +182,18 @@ int main(void) {
                 commandBuffer[commandIndex++] = c;
             }
         }
+        // Send the current door status to the GUI
+        // Update door status periodically
+            // Door status has changed, notify the GUI
+            if (doorStatus) {
+                SendDataToGUI("DOOR:OPEN\n");
+            } else {
+                SendDataToGUI("DOOR:CLOSED\n");
+            }
+            doorStatus = Get_Door_Status();; // Update global door status
 
         // Periodically send data to GUI
         // SendDataToGUI();
-        SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
-    }
+        SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
+    }
 }
