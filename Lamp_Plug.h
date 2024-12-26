@@ -6,17 +6,10 @@
 #include "SysTick.h"
 #include "InputButton.h"
 
-void PortF_Init(void); //portF initialization
-void InitializePortF_Lamp_Plug_Button(void); //the start
-void PlugOn(void);   // Connect to PC5 on relay, remember it is Active Low, but accounted for in the Function
+void PlugOn(void);   // Connect to PC5 on relay
 void PlugOff(void);
-void LampOn(void);   // Connect to PC4 on relay, same
+void LampOn(void);   // Connect to PC4 on relay
 void LampOff(void);
 
-
-//for testing purposes only
-void EnableGreenLED(void);
-void TurnGreenLEDOn(void);
-void TurnGreenLEDOff(void);
 
 #endif // LAMP_PLUG_H
