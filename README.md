@@ -25,15 +25,14 @@ The **Smart Home Control System** is a prototype mobile-based application integr
 ## Hardware Requirements  
 - TM4C123GH6PM microcontroller board  
 - Magnetic door switch  
-- Temperature sensor (e.g., LM35 or DHT11)  
+- Temperature sensor (LM35)  
 - 220V lamp with manual switch  
 - Plug and relay module  
-- Alarm module (buzzer or equivalent)  
+- Alarm module (buzzer)  
 - Power supply and connecting wires  
 - Mounted prototype surface  
 
 ## Repository Contents  
-- **/Code**: Source code for the TM4C123 microcontroller and the Android application (APK included).  
+- **/Code**: Source code for the TM4C123 microcontroller and the GUI (discktop application).  
 - **/Documentation**:  
   - Technical report detailing project components, wiring diagrams, flowcharts, and team contributions.  
-  - Prototype photos and demo video.  
