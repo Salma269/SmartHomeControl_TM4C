@@ -44,7 +44,9 @@ static void NmiSR(void);
 static void FaultISR(void);
 static void IntDefaultHandler(void);
 extern void SysTick_Handler(void);
-extern void Timer0A_Handler(void);
+extern void UART0_Handler(void);
+extern void GPIOPortD_Handler(void);
+
 
 //*****************************************************************************
 //
@@ -104,7 +106,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // GPIO Port C
     GPIOPortD_Handler,                      // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E ------------------------------------
-    IntDefaultHandler,                      // UART0 Rx and Tx
+    UART0_Handler,                      // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI0 Rx and Tx
     IntDefaultHandler,                      // I2C0 Master and Slave
