@@ -16,18 +16,23 @@
 #include "Temp.h"
 #include "Systick.h"
 #include "Peripheral.h"  
+#include "tm4c123gh6pm.h"
+
 
 #define UART0_BASE      0x4000C000
 #define UART_BASE UART0_BASE
 
-volatile int doorStatus = 0; // Initially, the door is open (or any other initial state)
+volatile int doorStatus = 0; // Initially, the door is open 
 
 // Define UART0 Base and GPIO PortA
 #define GPIO_PORTA_BASE 0x40004000
-// Simulated temperature
-volatile uint32_t temperature = 25;
+
 #define GPIO_PA0_U0RX 0x00000001  // GPIO pin for UART0 RX
 #define GPIO_PA1_U0TX 0x00000401  // GPIO pin for UART0 TX
+
+extern volatile float currentTemperature = 15.0f; 
+volatile uint32_t temperature = 15;
+
 
 // UART0 initialization and interrupt setup
 void UART_Init(void) {
@@ -86,28 +91,30 @@ void ProcessCommand(const char *command) {
     } else if (strcmp(command, "PLUG_OFF") == 0) {
         PlugOff();  // Turn off the plug
         UART_SendString("PLUG TURNED OFF\n");
+    } else if (strcmp(command, "BUZZER_ON") == 0) {
+        TriggerAlarm();
+    } else if (strcmp(command, "BUZZER_OFF") == 0) {
+        ClearAlarm();
     }
 }
+
 void SendDataToGUI(const char *status) {
+  
     if (strlen(status) >= 32) {
         UART_SendString("ERROR: Status message too long\n");
         return;
     }
-
-    char buffer[32];
-
     // Send door status
     UART_SendString(status);
-
-    // Send temperature
-    snprintf(buffer, sizeof(buffer), "TEMP:%d\n", temperature);
-    UART_SendString(buffer);
-
-    // Simulate temperature change
+    
     temperature += 1;
     if (temperature > 40) {
         temperature = 25;
     }
+    // Send updated temperature to the GUI
+    char temperatureBuffer[32];
+    snprintf(temperatureBuffer, sizeof(temperatureBuffer), "TEMP:%d\n", temperature);
+    UART_SendString(temperatureBuffer);  // Send the temperature message via UART
 }
 
 // UART interrupt handler
@@ -125,33 +132,23 @@ void UART0_Handler(void) {
     }
 }
 
-
-// Callback function for SysTick interrupt
 void SysTick_Callback_Func(void) {
-    // Toggle the relay on Port E, Pin 1
-    ReadTemperature();  // Read temperature from LM35
-    float temperature = ADCToCelsius(adcValue);  // First call
+    // Read the current temperature (ADC value)
+    uint32_t adcValueNow = ReadTemperature1();  
+    float temperature = ADCToCelsius(adcValueNow);  // Convert ADC value to Celsius
+    currentTemperature = temperature;  // Store the current temperature
+
+    // Send updated temperature to the GUI
+    char temperatureBuffer[32];
+    snprintf(temperatureBuffer, sizeof(temperatureBuffer), "TEMP:%.2f\n", temperature);
+    UART_SendString(temperatureBuffer);  // Send the temperature message via UART
+
+    // Check for alarm conditions
     if (temperature > TEMP_THRESHOLD && !alarmTriggered) {
-        TriggerAlarm();  // Trigger buzzer if temperature exceeds threshold
+        TriggerAlarm();  // Turn on the alarm if temperature exceeds threshold
     } else if (temperature <= TEMP_THRESHOLD && alarmTriggered) {
-        ClearAlarm();  // Clear buzzer if temperature is below threshold
+        ClearAlarm();  // Turn off the alarm if temperature is below threshold
     }
-}
-
-void TestBuzzer(void) {
-    // Set PE1 to output
-    GPIO_PORTE_DIR_R |= 0x02;  // Set PE1 as output
-    GPIO_PORTE_DEN_R |= 0x02;  // Enable digital function for PE1
-
-    // Test for active-low
-    GPIO_PORTE_DATA_R &= ~0x02;  // Set PE1 low to activate (if active-low)
-    SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
-    GPIO_PORTE_DATA_R |= 0x02;   // Set PE1 high to deactivate (if active-low)
-
-    // Test for active-high
-    GPIO_PORTE_DATA_R |= 0x02;   // Set PE1 high to activate (if active-high)
-    SysCtlDelay(SysCtlClockGet() / 3); // 1-second delay
-    GPIO_PORTE_DATA_R &= ~0x02;  // Set PE1 low to deactivate (if active-high)
 }
 
 
@@ -165,7 +162,6 @@ int main(void) {
     UART_Init();
     
     Peripheral_Init();
-    TestBuzzer();
 
     // Main loop
     while (1) {
@@ -190,7 +186,7 @@ int main(void) {
             } else {
                 SendDataToGUI("DOOR:CLOSED\n");
             }
-            doorStatus = Get_Door_Status();; // Update global door status
+            doorStatus = Get_Door_Status(); // Update global door status
 
         // Periodically send data to GUI
         // SendDataToGUI();
