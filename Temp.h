@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "tm4c123gh6pm.h"  // Include device-specific definitions
+#include "../Project Tasks/tm4c123gh6pm.h"  // Include device-specific definitions
 
 // Macros
-#define TEMP_THRESHOLD 30.0  // Temperature threshold in Celsius
+#define TEMP_THRESHOLD 15.0f  // Temperature threshold in Celsius
 #define SYS_CLOCK_FREQ 16000000  
 
 // Global variables
-extern uint32_t adcValue;     // ADC conversion result
-extern bool alarmTriggered;  // Alarm status
+extern volatile uint32_t adcValue;     // ADC conversion result
+extern volatile bool alarmTriggered;
 
 // Function Prototypes
 
