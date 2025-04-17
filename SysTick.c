@@ -11,14 +11,6 @@ void SysTick_Handler(void) {
     }
 }
 
-// Initialize SysTick Timer (interrupt mode)
-void SysTick_InitInterrupt(uint32_t reloadValue, void (*callback)(void)) {
-    NVIC_ST_CTRL_R = 0;               // Disable SysTick during setup
-    NVIC_ST_RELOAD_R = reloadValue;   // Set reload value
-    NVIC_ST_CURRENT_R = 0;            // Clear current timer value
-    SysTick_Callback = callback;      // Register the callback function
-    NVIC_ST_CTRL_R = 0x07;            // Enable SysTick with system clock and interrupt
-}
 // Initialize SysTick Timer
 void SysTick_Init(uint32_t reloadValue) {
     NVIC_ST_CTRL_R = 0;               // Disable SysTick during setup
