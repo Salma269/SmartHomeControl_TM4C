@@ -11,13 +11,20 @@
 #include "driverlib/gpio.h"
 #include "driverlib/uart.h"
 #include "driverlib/pin_map.h"
+#include "InputButton.h"  
+#include "Lamp_Plug.h" 
+#include "Temp.h"
+#include "Systick.h"
+#include "Peripheral.h" 
+#include "tm4c123gh6pm.h"
 
+static void (*SysTick_Callback)(void) = 0;
 
 void Peripheral_Init(void) {
     PortE_Init();
     ADC0_Init();
     PortD_Init();
-    SysTick_Init();
+    SysTick_InitInterrupt(15999999,SysTick_Callback);
     PortC_Init();
 }
 
@@ -55,9 +62,13 @@ void PortD_Init(void) {
     NVIC_EN0_R |= (1 << (INT_GPIOD - 16));                    // Enable interrupt in NVIC for Port D
 }
 
-void SysTick_Init(void) {
-    SysTick_InitInterrupt(15999999, SysTick_Callback);  // 1-second delay with a 16 MHz clock
-    NVIC_ST_CTRL_R |= 0x07;   // Enable SysTick with system clock and interrupt
+// Initialize SysTick Timer (interrupt mode)
+void SysTick_InitInterrupt(uint32_t reloadValue, void (*callback)(void)) {
+    NVIC_ST_CTRL_R = 0;               // Disable SysTick during setup
+    NVIC_ST_RELOAD_R = reloadValue;   // Set reload value
+    NVIC_ST_CURRENT_R = 0;            // Clear current timer value
+    SysTick_Callback = callback;      // Register the callback function
+    NVIC_ST_CTRL_R = 0x07;            // Enable SysTick with system clock and interrupt
 }
 
 void PortC_Init(void) {
